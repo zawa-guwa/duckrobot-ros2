@@ -23,8 +23,6 @@ static const char* dev_name = "/dev/i2c-1";
 #define DEADZONE 0.05 // フロントエンド側でも設定しているが、念のため
 
 
-
-
 namespace motor_control_node
 {
 
@@ -44,8 +42,6 @@ private:
 
 MotorDataSubscriber::MotorDataSubscriber(const rclcpp::NodeOptions & options) : Node("motor_data_subscriber", options)
 {
-	// using std::placeholders::_1;
-	// subscription_ = this->create_subscription<std_msgs::msg::String>("motor_data", 10, std::bind(&MotorDataSubscriber::motorDataCallback, this, std::placeholders::_1));
   subscription_ = this->create_subscription<motor_control::msg::Joystick>("motor_data", 10, std::bind(&MotorDataSubscriber::motorDataCallback, this, std::placeholders::_1));
 }
 
@@ -84,7 +80,7 @@ int8_t MotorDataSubscriber::i2cWrite(uint8_t dev_addr, uint8_t reg_addr, uint8_t
 {
   /* I2Cデバイスをオープンする. */
   int32_t fd = open(dev_name, O_RDWR);
-  int32_t ret = -1;
+
   if (fd == -1) {
     RCLCPP_FATAL(this->get_logger(), "i2cWrite: failed to open: %s\n", strerror(errno));
     return -1;
@@ -101,7 +97,6 @@ int8_t MotorDataSubscriber::i2cWrite(uint8_t dev_addr, uint8_t reg_addr, uint8_t
   memcpy(&buffer[1], data, data_length); /* 2バイト目以降にデータをセット. */ 
 
   /* I2C-Writeメッセージを作成する. */
-  // struct i2c_msg message = { dev_addr, 0, data_length + 1, buffer };
   i2c_msg message[1];
   message[0].addr = dev_addr; /* addrは16bit幅 */
   message[0].flags = 0; /* read、writeやアドレス長の指定に利用 */
@@ -137,7 +132,7 @@ int32_t MotorDataSubscriber::motoWriteData(float x, float y)
   RCLCPP_INFO(this->get_logger(), "左モーター");
   leftWriteData[0] = makeMotorWriteData(left_cmd);
   RCLCPP_INFO(this->get_logger(), "右モーター");
-  rightWriteData[0] = makeMotorWriteData(right_cmd);
+  rightWriteData[0] = makeMotorWriteData((float)-1.0 * right_cmd);
 
   i2cWrite(MOTOR_LEFT, REG_ADDR, leftWriteData, sizeof(leftWriteData));
   i2cWrite(MOTOR_RIGHT, REG_ADDR, rightWriteData, sizeof(rightWriteData));
