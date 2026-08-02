@@ -11,6 +11,7 @@ class ImageSubscriber : public rclcpp::Node{
 public:
   ImageSubscriber(rclcpp::NodeOptions options);
   ~ImageSubscriber();
+  
 private:
   void imageCallback(sensor_msgs::msg::Image::SharedPtr img);
   rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr image_sub_;

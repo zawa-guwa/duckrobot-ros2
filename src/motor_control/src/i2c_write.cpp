@@ -12,15 +12,23 @@
 
 static const char* dev_name = "/dev/i2c-1";
 
+// デバイスアドレス
 #define MOTOR_LEFT 0x60
 #define MOTOR_RIGHT 0x68
-#define REG_ADDR 0x00
+
+// レジスタアドレス
+#define REG_ADDR_CONTROL 0x00
+
+// 書き込み可能な電圧の最小値・最大値
 #define VSET_MIN 0x06
 #define VSET_MAX 0x3F
+
+// 出力状態
 #define RSET_FORWARD 0x01
 #define RSET_REVERSE 0x02
 #define RSET_STOP 0x00
-#define DEADZONE 0.05 // フロントエンド側でも設定しているが、念のため
+
+#define DEADZONE 0.05 /* フロントエンド側でも設定しているが、念のため */
 
 
 namespace motor_control_node
@@ -49,11 +57,9 @@ MotorDataSubscriber::~MotorDataSubscriber()
 {
 }
 
-/*! I2Cスレーブデバイスにデータを書き込む.
- * @param[in] dev_addr デバイスアドレス.
- * @param[in] reg_addr レジスタアドレス.
- * @param[in] data 書き込むデータの格納場所を指すポインタ.
- * @param[in] data_length 書き込むデータの長さ.
+/*! 書き込みデータを生成する.
+ * @param[in] cmd 要求速度
+ * @param[out] 書き込みデータ
  */
 int8_t MotorDataSubscriber::makeMotorWriteData(float cmd)
 {
@@ -70,7 +76,7 @@ int8_t MotorDataSubscriber::makeMotorWriteData(float cmd)
   return motor_voltage | motor_rotation;
 }
 
-/*! I2Cスレーブデバイスにデータを書き込む.
+/** I2Cスレーブデバイスにデータを書き込む.
  * @param[in] dev_addr デバイスアドレス.
  * @param[in] reg_addr レジスタアドレス.
  * @param[in] data 書き込むデータの格納場所を指すポインタ.
@@ -132,10 +138,10 @@ int32_t MotorDataSubscriber::motoWriteData(float x, float y)
   RCLCPP_INFO(this->get_logger(), "左モーター");
   leftWriteData[0] = makeMotorWriteData(left_cmd);
   RCLCPP_INFO(this->get_logger(), "右モーター");
-  rightWriteData[0] = makeMotorWriteData((float)-1.0 * right_cmd);
+  rightWriteData[0] = makeMotorWriteData((float)-1.0 * right_cmd); // 車体に取り付けた際に望みどおりに動くように、-1を掛けている
 
-  i2cWrite(MOTOR_LEFT, REG_ADDR, leftWriteData, sizeof(leftWriteData));
-  i2cWrite(MOTOR_RIGHT, REG_ADDR, rightWriteData, sizeof(rightWriteData));
+  i2cWrite(MOTOR_LEFT, REG_ADDR_CONTROL, leftWriteData, sizeof(leftWriteData));
+  i2cWrite(MOTOR_RIGHT, REG_ADDR_CONTROL, rightWriteData, sizeof(rightWriteData));
 
   return 0;
 }

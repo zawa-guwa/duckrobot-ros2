@@ -11,7 +11,6 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_components REQUIRED)
-find_package(std_msgs REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 
 # install launch files
@@ -43,14 +42,13 @@ add_library(${TARGET_NAME} SHARED
 )
 ament_target_dependencies(${TARGET_NAME} 
   rclcpp 
-  rclcpp_components 
-  std_msgs
+  rclcpp_components
 )
 
 rosidl_get_typesupport_target(cpp_typesupport_target ${PROJECT_NAME} "rosidl_typesupport_cpp")
 target_link_libraries(${TARGET_NAME} ${cpp_typesupport_target})
 
-ament_target_dependencies(${TARGET_NAME} rclcpp rclcpp_components std_msgs)
+ament_target_dependencies(${TARGET_NAME} rclcpp rclcpp_components)
 
 rclcpp_components_register_nodes(${TARGET_NAME} "motor_control_node::MotorDataSubscriber")
 
